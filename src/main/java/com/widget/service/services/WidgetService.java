@@ -6,8 +6,6 @@ import com.widget.service.models.WidgetsRepository;
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
-
 /**
  * Service for working with widgets.
  */
@@ -41,7 +39,6 @@ public class WidgetService {
      * @return Saved widget.
      */
     public Widget createWidget(Widget newWidget) {
-        newWidget.setLastModified(ZonedDateTime.now());
         return widgetsRepository.save(newWidget);
     }
 
@@ -56,7 +53,6 @@ public class WidgetService {
             throw new ObjectNotFoundException(widgetId, "Widget");
         }
 
-        updatedWidget.setLastModified(ZonedDateTime.now());
         return widgetsRepository.save(updatedWidget);
     }
 
@@ -66,5 +62,19 @@ public class WidgetService {
      */
     public void deleteWidget(long id) {
         widgetsRepository.deleteById(id);
+    }
+
+    /**
+     * Leads all widgets z-indices to a consistent state when creating new one.
+     * @param widget Widget to create.
+     */
+    public void updateZIndices(Widget widget) {
+        if (widget.getZ() == null) {
+            Integer maxIndex = widgetsRepository.getMaxZIndex();
+            widget.setZ(maxIndex == null ? 0 : maxIndex + 1);
+        }
+        else if (widgetsRepository.getWidgetsCountByZIndex(widget.getZ()) > 0) {
+            widgetsRepository.incZIndices(widget.getZ());
+        }
     }
 }

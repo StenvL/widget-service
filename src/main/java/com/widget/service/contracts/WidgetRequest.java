@@ -1,49 +1,24 @@
 package com.widget.service.contracts;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.validation.constraints.NotNull;
+
+@Getter
+@Setter
 public class WidgetRequest {
-    private int x;
-    private int y;
-    private int z;
-    private double width;
-    private double height;
+    @NotNull(message = "X coordinate must be present.")
+    private Integer x;
 
-    public int getX() {
-        return x;
-    }
+    @NotNull(message = "Y coordinate must be present.")
+    private Integer y;
 
-    public void setX(int x) {
-        this.x = x;
-    }
+    private Integer z = null;
 
-    public int getY() {
-        return y;
-    }
+    @NotNull(message = "Width must be present.")
+    private Double width;
 
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public int getZ() {
-        return z;
-    }
-
-    public void setZ(int z) {
-        this.z = z;
-    }
-
-    public double getWidth() {
-        return width;
-    }
-
-    public void setWidth(double width) {
-        this.width = width;
-    }
-
-    public double getHeight() {
-        return height;
-    }
-
-    public void setHeight(double height) {
-        this.height = height;
-    }
+    @NotNull(message = "Width must be present.")
+    private Double height;
 }
