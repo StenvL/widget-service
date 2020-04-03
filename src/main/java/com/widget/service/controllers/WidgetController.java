@@ -9,9 +9,11 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -32,12 +34,12 @@ public class WidgetController {
      * Handles GET request to /widgets.
      * @return All widgets.
      */
-    @GetMapping("/")
-    public ResponseEntity<?> getAll() {
-        Iterable<Widget> widgets = widgetService.getAllWidgets();
+    @GetMapping
+    public ResponseEntity<?> getAll(Pageable pageable) {
+        Page<Widget> widgets = widgetService.getAllWidgets(pageable);
 
         Type targetListType = new TypeToken<List<WidgetResponse>>() {}.getType();
-        List<WidgetResponse> result = mapper.map(widgets, targetListType);
+        List<WidgetResponse> result = mapper.map(widgets.getContent(), targetListType);
 
         return ResponseEntity.ok(result);
     }
