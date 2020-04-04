@@ -1,9 +1,11 @@
-package com.widget.service.controllers;
+package com.widget.service.controller;
 
-import com.widget.service.contracts.WidgetRequest;
-import com.widget.service.contracts.WidgetResponse;
-import com.widget.service.models.Widget;
-import com.widget.service.services.WidgetService;
+import com.widget.service.contract.WidgetQuery;
+import com.widget.service.contract.WidgetRequest;
+import com.widget.service.contract.WidgetResponse;
+import com.widget.service.model.Widget;
+import com.widget.service.model.WidgetFilter;
+import com.widget.service.service.WidgetService;
 import org.hibernate.ObjectNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
+import javax.validation.constraints.NotNull;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -35,11 +38,25 @@ public class WidgetController {
      * @return All widgets.
      */
     @GetMapping
-    public ResponseEntity<?> getAll(Pageable pageable) {
-        Page<Widget> widgets = widgetService.getAllWidgets(pageable);
+    public ResponseEntity<?> getAll(Pageable pageable, @NotNull WidgetQuery widgetQuery) {
+        Page<Widget> pagedWidgets = null;
+        WidgetFilter widgetFilter = null;
+
+        if (!widgetQuery.isEmpty()) {
+            if (widgetQuery.isValid()) {
+                widgetFilter = mapper.map(widgetQuery, WidgetFilter.class);
+                pagedWidgets = widgetService.getAllWidgets(pageable, widgetFilter);
+            }
+            else {
+                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            }
+        }
+        else {
+            pagedWidgets = widgetService.getAllWidgets(pageable, null);
+        }
 
         Type targetListType = new TypeToken<List<WidgetResponse>>() {}.getType();
-        List<WidgetResponse> result = mapper.map(widgets.getContent(), targetListType);
+        List<WidgetResponse> result = mapper.map(pagedWidgets.getContent(), targetListType);
 
         return ResponseEntity.ok(result);
     }

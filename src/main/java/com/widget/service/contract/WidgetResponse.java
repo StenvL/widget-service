@@ -1,4 +1,4 @@
-package com.widget.service.contracts;
+package com.widget.service.contract;
 
 import java.time.ZonedDateTime;
 

@@ -1,6 +1,6 @@
-package com.widget.service.models;
+package com.widget.service.model;
 
-import com.widget.service.models.listeners.WidgetListener;
+import com.widget.service.model.listener.WidgetListener;
 import lombok.Getter;
 import lombok.Setter;
 

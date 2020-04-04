@@ -1,7 +1,8 @@
-package com.widget.service.services;
+package com.widget.service.service;
 
-import com.widget.service.models.Widget;
-import com.widget.service.models.WidgetsRepository;
+import com.widget.service.model.Widget;
+import com.widget.service.model.WidgetFilter;
+import com.widget.service.repository.WidgetsRepository;
 
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.data.domain.Page;
@@ -25,9 +26,20 @@ public class WidgetService {
      * Returns all widgets from storage.
      * @return
      */
-    public Page<Widget> getAllWidgets(Pageable pageable) {
-        Pageable request = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("z").descending());
-        return widgetsRepository.findAll(request);
+    public Page<Widget> getAllWidgets(Pageable pageable, WidgetFilter widgetFilter) {
+        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("z").descending());
+
+        if (widgetFilter == null) {
+            return widgetsRepository.findAll(pageRequest);
+        }
+        else {
+            return widgetsRepository.findByArea(
+                widgetFilter.getX1(),
+                widgetFilter.getY1(),
+                widgetFilter.getX2(),
+                widgetFilter.getY2(),
+                pageRequest);
+        }
     }
 
     /**

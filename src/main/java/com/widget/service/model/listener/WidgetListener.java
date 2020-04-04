@@ -1,7 +1,7 @@
-package com.widget.service.models.listeners;
+package com.widget.service.model.listener;
 
-import com.widget.service.models.Widget;
-import com.widget.service.services.WidgetService;
+import com.widget.service.model.Widget;
+import com.widget.service.service.WidgetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
