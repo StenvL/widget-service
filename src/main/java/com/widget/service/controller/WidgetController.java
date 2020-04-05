@@ -113,7 +113,7 @@ public class WidgetController {
             return ResponseEntity.ok(mapper.map(widget, WidgetResponse.class));
         }
         catch(ObjectNotFoundException ex) {
-            return new ResponseEntity(ex.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
     }
 
