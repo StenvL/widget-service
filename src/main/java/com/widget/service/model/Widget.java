@@ -1,6 +1,5 @@
 package com.widget.service.model;
 
-import com.widget.service.model.listener.WidgetListener;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +9,6 @@ import java.time.ZonedDateTime;
 
 @Entity
 @Getter @Setter
-@EntityListeners(WidgetListener.class)
 public class Widget {
     @Id
     @GeneratedValue

@@ -11,6 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.time.ZonedDateTime;
+
 /**
  * Service for working with widgets.
  */
@@ -57,7 +60,9 @@ public class WidgetService {
      * @return Saved widget.
      */
     public Widget createWidget(Widget newWidget) {
-        return widgetsRepository.save(newWidget);
+        newWidget.setLastModified(ZonedDateTime.now());
+
+        return this.saveWidgetAndUpdateZIndices(newWidget);
     }
 
     /**
@@ -71,7 +76,9 @@ public class WidgetService {
             throw new ObjectNotFoundException(widgetId, "Widget");
         }
 
-        return widgetsRepository.save(updatedWidget);
+        updatedWidget.setLastModified(ZonedDateTime.now());
+
+        return this.saveWidgetAndUpdateZIndices(updatedWidget);
     }
 
     /**
@@ -83,10 +90,10 @@ public class WidgetService {
     }
 
     /**
-     * Leads all widgets z-indices to a consistent state when creating new one.
-     * @param widget Widget to create.
+     * Saves widget to storage and leads all widgets z-indices to a consistent state.
+     * @param widget Widget to save.
      */
-    public void updateZIndices(Widget widget) {
+    private synchronized Widget saveWidgetAndUpdateZIndices(Widget widget) {
         if (widget.getZ() == null) {
             Integer maxIndex = widgetsRepository.getMaxZIndex();
             widget.setZ(maxIndex == null ? 0 : maxIndex + 1);
@@ -94,5 +101,7 @@ public class WidgetService {
         else if (widgetsRepository.getWidgetsCountByZIndex(widget.getZ()) > 0) {
             widgetsRepository.incZIndices(widget.getZ());
         }
+
+        return widgetsRepository.save(widget);
     }
 }
