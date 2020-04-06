@@ -1,4 +1,4 @@
-package com.widget.service;
+package com.widget.service.configuration;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
