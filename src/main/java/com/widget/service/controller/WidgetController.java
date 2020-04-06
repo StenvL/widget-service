@@ -6,17 +6,22 @@ import com.widget.service.contract.WidgetResponse;
 import com.widget.service.model.Widget;
 import com.widget.service.model.WidgetFilter;
 import com.widget.service.service.WidgetService;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.hibernate.ObjectNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -38,7 +43,9 @@ public class WidgetController {
      * @return All widgets.
      */
     @GetMapping
-    public ResponseEntity<?> getAll(Pageable pageable, @NotNull WidgetQuery widgetQuery) {
+    public ResponseEntity<?> getAll(
+            @SortDefault(sort="z", direction = Sort.Direction.DESC)Pageable pageable,
+            WidgetQuery widgetQuery) {
         Page<Widget> pagedWidgets = null;
         WidgetFilter widgetFilter = null;
 
@@ -82,7 +89,7 @@ public class WidgetController {
      * @return Created widget.
      */
     @PostMapping("/")
-    public ResponseEntity<?> post(@RequestBody WidgetRequest widgetRequest) {
+    public ResponseEntity<?> post(@RequestBody @Valid WidgetRequest widgetRequest) {
         if (widgetRequest == null) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
@@ -100,7 +107,7 @@ public class WidgetController {
      * @return Updated widget.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> put(@RequestBody WidgetRequest widgetRequest, @PathVariable long id) {
+    public ResponseEntity<?> put(@RequestBody @Valid WidgetRequest widgetRequest, @PathVariable long id) {
         if (widgetRequest == null) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }

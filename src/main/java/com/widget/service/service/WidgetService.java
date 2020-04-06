@@ -6,12 +6,10 @@ import com.widget.service.repository.WidgetsRepository;
 
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.time.ZonedDateTime;
 
 /**
@@ -27,13 +25,10 @@ public class WidgetService {
 
     /**
      * Returns all widgets from storage.
-     * @return
      */
     public Page<Widget> getAllWidgets(Pageable pageable, WidgetFilter widgetFilter) {
-        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("z").descending());
-
         if (widgetFilter == null) {
-            return widgetsRepository.findAll(pageRequest);
+            return widgetsRepository.findAll(pageable);
         }
         else {
             return widgetsRepository.findByArea(
@@ -41,7 +36,7 @@ public class WidgetService {
                 widgetFilter.getY1(),
                 widgetFilter.getX2(),
                 widgetFilter.getY2(),
-                pageRequest);
+                pageable);
         }
     }
 
@@ -59,6 +54,7 @@ public class WidgetService {
      * @param newWidget Widget to create in storage.
      * @return Saved widget.
      */
+    @Transactional
     public Widget createWidget(Widget newWidget) {
         newWidget.setLastModified(ZonedDateTime.now());
 
@@ -70,6 +66,7 @@ public class WidgetService {
      * @param updatedWidget Updated entity.
      * @return Saved entity.
      */
+    @Transactional
     public Widget modifyWidget(Widget updatedWidget) throws ObjectNotFoundException {
         long widgetId = updatedWidget.getId();
         if (!widgetsRepository.existsById(widgetId)) {
