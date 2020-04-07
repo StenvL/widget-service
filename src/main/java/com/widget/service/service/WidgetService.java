@@ -2,7 +2,7 @@ package com.widget.service.service;
 
 import com.widget.service.model.Widget;
 import com.widget.service.model.WidgetFilter;
-import com.widget.service.repository.WidgetsRepository;
+import com.widget.service.repository.WidgetRepository;
 
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.data.domain.Page;
@@ -17,10 +17,10 @@ import java.time.ZonedDateTime;
  */
 @Service
 public class WidgetService {
-    private WidgetsRepository widgetsRepository;
+    private WidgetRepository widgetRepository;
 
-    public WidgetService(WidgetsRepository widgetsRepository) {
-        this.widgetsRepository = widgetsRepository;
+    public WidgetService(WidgetRepository widgetRepository) {
+        this.widgetRepository = widgetRepository;
     }
 
     /**
@@ -28,10 +28,10 @@ public class WidgetService {
      */
     public Page<Widget> getAllWidgets(Pageable pageable, WidgetFilter widgetFilter) {
         if (widgetFilter == null) {
-            return widgetsRepository.findAll(pageable);
+            return widgetRepository.findAll(pageable);
         }
         else {
-            return widgetsRepository.findByArea(
+            return widgetRepository.findByArea(
                 widgetFilter.getX1(),
                 widgetFilter.getY1(),
                 widgetFilter.getX2(),
@@ -46,7 +46,7 @@ public class WidgetService {
      * @return Widget by its id.
      */
     public Widget getWidgetById(long id) {
-        return widgetsRepository.findById(id).orElse(null);
+        return widgetRepository.findById(id).orElse(null);
     }
 
     /**
@@ -69,7 +69,7 @@ public class WidgetService {
     @Transactional
     public Widget modifyWidget(Widget updatedWidget) throws ObjectNotFoundException {
         long widgetId = updatedWidget.getId();
-        if (!widgetsRepository.existsById(widgetId)) {
+        if (!widgetRepository.existsById(widgetId)) {
             throw new ObjectNotFoundException(widgetId, "Widget");
         }
 
@@ -83,7 +83,7 @@ public class WidgetService {
      * @param id Widget id.
      */
     public void deleteWidget(long id) {
-        widgetsRepository.deleteById(id);
+        widgetRepository.deleteById(id);
     }
 
     /**
@@ -92,13 +92,13 @@ public class WidgetService {
      */
     private synchronized Widget saveWidgetAndUpdateZIndices(Widget widget) {
         if (widget.getZ() == null) {
-            Integer maxIndex = widgetsRepository.getMaxZIndex();
+            Integer maxIndex = widgetRepository.getMaxZIndex();
             widget.setZ(maxIndex == null ? 0 : maxIndex + 1);
         }
-        else if (widgetsRepository.getWidgetsCountByZIndex(widget.getZ()) > 0) {
-            widgetsRepository.incZIndices(widget.getZ());
+        else if (widgetRepository.getWidgetsCountByZIndex(widget.getZ()) > 0) {
+            widgetRepository.incZIndices(widget.getZ());
         }
 
-        return widgetsRepository.save(widget);
+        return widgetRepository.save(widget);
     }
 }

@@ -6,8 +6,6 @@ import com.widget.service.contract.WidgetResponse;
 import com.widget.service.model.Widget;
 import com.widget.service.model.WidgetFilter;
 import com.widget.service.service.WidgetService;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.hibernate.ObjectNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.lang.reflect.Type;
 import java.util.List;
 
