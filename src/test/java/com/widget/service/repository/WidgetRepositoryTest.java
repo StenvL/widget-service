@@ -16,9 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 class WidgetRepositoryTest {
     @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
     private WidgetRepository widgetRepository;
 
     @Test
