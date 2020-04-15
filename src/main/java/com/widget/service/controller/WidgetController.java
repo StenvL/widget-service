@@ -1,27 +1,25 @@
 package com.widget.service.controller;
 
+import com.widget.storage.contract.PageRequest;
 import com.widget.service.contract.WidgetQuery;
 import com.widget.service.contract.WidgetRequest;
 import com.widget.service.contract.WidgetResponse;
 import com.widget.service.model.Widget;
 import com.widget.service.model.WidgetFilter;
 import com.widget.service.service.WidgetService;
-import org.hibernate.ObjectNotFoundException;
+import com.widget.storage.EntityNotFoundException;
+import com.widget.storage.contract.PageResponse;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Pageable;
 
 import javax.validation.Valid;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/widgets")
@@ -40,27 +38,25 @@ public class WidgetController {
      * @return All widgets.
      */
     @GetMapping
-    public ResponseEntity<?> getAll(
-            @SortDefault(sort="z", direction = Sort.Direction.DESC)Pageable pageable,
-            WidgetQuery widgetQuery) {
-        Page<Widget> pagedWidgets = null;
+    public ResponseEntity<?> getAll(PageRequest pageRequest, WidgetQuery widgetQuery) {
+        PageResponse<Widget> pagedWidgets = null;
         WidgetFilter widgetFilter = null;
 
         if (!widgetQuery.isEmpty()) {
             if (widgetQuery.isValid()) {
                 widgetFilter = mapper.map(widgetQuery, WidgetFilter.class);
-                pagedWidgets = widgetService.getAllWidgets(pageable, widgetFilter);
+                pagedWidgets = widgetService.getAllWidgets(pageRequest, widgetFilter);
             }
             else {
                 return new ResponseEntity(HttpStatus.BAD_REQUEST);
             }
         }
         else {
-            pagedWidgets = widgetService.getAllWidgets(pageable, null);
+            pagedWidgets = widgetService.getAllWidgets(pageRequest, null);
         }
 
         Type targetListType = new TypeToken<List<WidgetResponse>>() {}.getType();
-        List<WidgetResponse> result = mapper.map(pagedWidgets.getContent(), targetListType);
+        List<WidgetResponse> result = mapper.map(pagedWidgets.getRecords(), targetListType);
 
         return ResponseEntity.ok(result);
     }
@@ -71,7 +67,7 @@ public class WidgetController {
      * @return Widget by its identifier.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable("id") long id) {
+    public ResponseEntity<?> getById(@PathVariable("id") UUID id) {
         Widget widget = widgetService.getWidgetById(id);
         if (widget == null) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
@@ -104,7 +100,7 @@ public class WidgetController {
      * @return Updated widget.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> put(@RequestBody @Valid WidgetRequest widgetRequest, @PathVariable long id) {
+    public ResponseEntity<?> put(@RequestBody @Valid WidgetRequest widgetRequest, @PathVariable UUID id) {
         if (widgetRequest == null) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
@@ -116,7 +112,7 @@ public class WidgetController {
 
             return ResponseEntity.ok(mapper.map(widget, WidgetResponse.class));
         }
-        catch(ObjectNotFoundException ex) {
+        catch(EntityNotFoundException ex) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
     }
@@ -126,12 +122,12 @@ public class WidgetController {
      * @param id Identifier of widget.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable long id) {
+    public ResponseEntity<?> delete(@PathVariable UUID id) {
         try {
             widgetService.deleteWidget(id);
             return new ResponseEntity(HttpStatus.OK);
         }
-        catch(EmptyResultDataAccessException ex) {
+        catch(EntityNotFoundException ex) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
     }
