@@ -59,7 +59,7 @@ public class WidgetService {
      * @return Saved widget.
      */
     public Widget createWidget(Widget newWidget) {
-        return this.saveWidgetAndUpdateZIndices(newWidget);
+        return storage.save(newWidget);
     }
 
     /**
@@ -73,7 +73,7 @@ public class WidgetService {
             throw new EntityNotFoundException();
         }
 
-        return this.saveWidgetAndUpdateZIndices(updatedWidget);
+        return storage.save(updatedWidget);
     }
 
     /**
@@ -84,54 +84,6 @@ public class WidgetService {
         storage.deleteById(Widget.class, id);
     }
 
-    /**
-     * Saves widget into storage and leads all widgets z-indices to a consistent state.
-     * @param widget Widget to save.
-     */
-    private synchronized Widget saveWidgetAndUpdateZIndices(Widget widget) {
-        if (widget.getZ() == null) {
-            Integer maxIndex = getMaxZIndex();
-            widget.setZ(maxIndex == null ? 0 : maxIndex + 1);
-        }
-        else if (this.getWidgetsWithSameZIndex(widget).size() > 0) {
-            incZIndices(widget.getZ());
-        }
-
-        return storage.save(widget);
-    }
-
-    /**
-     * Returns max z-index for all widgets.
-     */
-    private Integer getMaxZIndex() {
-        List<Widget> widgets = storage.findAll(Widget.class, null);
-        return widgets
-            .stream()
-            .map(x -> x.getZ())
-            .max(Integer::compare)
-            .orElse(null);
-    }
-
-    /**
-     * Returns widgets with the same z-index.
-     * @param widget Widget with z-index to check.
-     */
-    private List<Widget> getWidgetsWithSameZIndex(Widget widget) {
-        return storage.findAll(
-            Widget.class,
-            x -> x.getZ().equals(widget.getZ()) && !x.getId().equals(widget.getId()),
-        null);
-    }
-
-    /**
-     * Increments z-indices for all widgets that have greater z-index than mentioned.
-     * @param zIndex z-index.
-     */
-    private void incZIndices(Integer zIndex) {
-        List<Widget> widgets = storage.findAll(Widget.class, x -> x.getZ() >= zIndex, null);
-        widgets.forEach(x -> x.setZ(x.getZ() + 1));
-        storage.saveAll(widgets);
-    }
 
     private List<Widget> filterByArea(List<Widget> widgets) {
         return widgets;

@@ -264,7 +264,7 @@ class InMemoryStorageTest {
         Widget widget2 = getWidget();
         Widget widget3 = getWidget();
         Widget widget4 = getWidget();
-        widget1.setZ(1);
+        widget1.setZ(0);
         widget2.setZ(1);
         widget3.setZ(2);
         widget4.setZ(3);
