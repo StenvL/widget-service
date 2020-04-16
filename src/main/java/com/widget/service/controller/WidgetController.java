@@ -56,9 +56,9 @@ public class WidgetController {
         }
 
         Type targetListType = new TypeToken<List<WidgetResponse>>() {}.getType();
-        List<WidgetResponse> result = mapper.map(pagedWidgets.getRecords(), targetListType);
+        pagedWidgets.setRecords(mapper.map(pagedWidgets.getRecords(), targetListType));
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(pagedWidgets);
     }
 
     /**
