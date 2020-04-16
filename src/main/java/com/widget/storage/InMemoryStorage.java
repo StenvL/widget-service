@@ -123,7 +123,7 @@ public class InMemoryStorage implements IStorage {
             return PageResponse.empty();
         }
         else {
-            return getPagedResponse(entitiesByType, pageRequest);
+            return PageResponse.create(entitiesByType, pageRequest);
         }
     }
 
@@ -138,7 +138,7 @@ public class InMemoryStorage implements IStorage {
             Comparator<T> sort) {
         List<T> filteredEntitiesByType = findAll(type, filterPredicate, sort);
 
-        return getPagedResponse(filteredEntitiesByType, pageRequest);
+        return PageResponse.create(filteredEntitiesByType, pageRequest);
     }
 
     /**
@@ -180,17 +180,6 @@ public class InMemoryStorage implements IStorage {
         return entities.getOrDefault(type, new ArrayList<>())
             .stream()
             .anyMatch(x -> x.getId().equals(id));
-    }
-
-    /**
-     * Creates paged response for all records.
-     * @param allRecords Records.
-     * @param pageRequest Page request.
-     */
-    private <T extends BaseEntity> PageResponse getPagedResponse(List<T> allRecords, PageRequest pageRequest) {
-        int pageStartIndex = pageRequest.getPage() * pageRequest.getPerPage(),
-            pageEndIndex = Math.min((pageStartIndex + pageRequest.getPerPage()), allRecords.size());
-        return new PageResponse(allRecords.subList(pageStartIndex, pageEndIndex), allRecords.size());
     }
 
     /**
