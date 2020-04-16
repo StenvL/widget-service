@@ -10,10 +10,7 @@ import com.widget.storage.contract.PageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Predicate;
+import java.util.*;
 
 /**
  * Service for working with widgets.
@@ -30,17 +27,16 @@ public class WidgetService {
      * @return
      */
     public PageResponse getAllWidgets(PageRequest pageRequest, WidgetFilter widgetFilter) {
-        Comparator<Widget> sortComparator = Comparator.comparing(Widget::getZ, Comparator.reverseOrder());
+        Comparator<Widget> zSortComparator = Comparator.comparing(Widget::getZ, Comparator.reverseOrder());
         if (widgetFilter == null) {
-            return storage.findAll(Widget.class, pageRequest, sortComparator);
+            return storage.findAll(Widget.class, pageRequest, zSortComparator);
         }
         else {
-            Predicate<Widget> predicate = x ->
-                x.getX() >= widgetFilter.getX1() + x.getWidth() / 2
-                && x.getY() >= widgetFilter.getY1() + x.getHeight() / 2
-                && x.getX() <= widgetFilter.getX2() - x.getWidth() / 2
-                && x.getY() <= widgetFilter.getY2() - x.getHeight() / 2;
-            return storage.findAll(Widget.class, predicate, pageRequest, sortComparator);
+            Comparator<Widget> areaSortComparator = Comparator.comparing(x -> x.getWidth() * x.getHeight());
+            List<Widget> allWidgets = storage.findAll(Widget.class, areaSortComparator);
+
+            List filteredWidgets = filterByArea(allWidgets, widgetFilter);
+            return PageResponse.create(filteredWidgets, pageRequest);
         }
     }
 
@@ -84,8 +80,34 @@ public class WidgetService {
         storage.deleteById(Widget.class, id);
     }
 
+    /**
+     * Filters collection of widgets by area.
+     * @param widgets Widgets collection.
+     * @param filter Widgets filter.
+     */
+    private List<Widget> filterByArea(List<Widget> widgets, WidgetFilter filter) {
+        List<Widget> result = new ArrayList<>();
 
-    private List<Widget> filterByArea(List<Widget> widgets) {
-        return widgets;
+        boolean isWidgetAreaOver = false;
+        double filterArea = (filter.getX2() - filter.getX1()) * (filter.getY2() - filter.getY1());
+
+        Iterator<Widget> iterator = widgets.iterator();
+        while(iterator.hasNext() && !isWidgetAreaOver) {
+            Widget curWidget = iterator.next();
+
+            double widgetArea = curWidget.getWidth() * curWidget.getHeight();
+            if (widgetArea <= filterArea) {
+                if (curWidget.getX() - curWidget.getWidth() / 2 >= filter.getX1()
+                        && curWidget.getX() + curWidget.getWidth() / 2 <= filter.getX2()
+                        && curWidget.getY() - curWidget.getHeight() / 2 >= filter.getY1()
+                        && curWidget.getY() + curWidget.getHeight() / 2<= filter.getY2()) {
+                    result.add(curWidget);
+                }
+            } else {
+                isWidgetAreaOver = true;
+            }
+        }
+
+        return result;
     }
 }

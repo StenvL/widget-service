@@ -69,26 +69,29 @@ class WidgetServiceTest {
         Widget widget2 = new Widget();
         widget2.setX(25);
         widget2.setY(25);
-        widget2.setWidth(5);
-        widget2.setHeight(5);
+        widget2.setWidth(6);
+        widget2.setHeight(6);
         widgetService.createWidget(widget2);
 
-        WidgetFilter filter1 = new WidgetFilter(0, 0, 15, 15);
-        WidgetFilter filter2 = new WidgetFilter(20, 20, 35, 35);
-        WidgetFilter filter3 = new WidgetFilter(10, 10, 25, 25);
+        WidgetFilter filter1 = new WidgetFilter(0., 0., 15., 15.);
+        WidgetFilter filter2 = new WidgetFilter(20., 20., 35., 35.);
+        WidgetFilter filter3 = new WidgetFilter(10., 10., 25., 25.);
+        WidgetFilter filter4 = new WidgetFilter(7., 7., 12.5, 12.5);
         PageRequest pageRequest = new PageRequest(0, 10);
 
         // when
         PageResponse res1 = widgetService.getAllWidgets(pageRequest, filter1);
         PageResponse res2 = widgetService.getAllWidgets(pageRequest, filter2);
         PageResponse res3 = widgetService.getAllWidgets(pageRequest, filter3);
-        PageResponse res4 = widgetService.getAllWidgets(pageRequest, null);
+        PageResponse res4 = widgetService.getAllWidgets(pageRequest, filter4);
+        PageResponse res5 = widgetService.getAllWidgets(pageRequest, null);
 
         // then
         assertEquals(res1.getRecords().size(), 1);
         assertEquals(res2.getRecords().size(), 1);
         assertEquals(res3.getRecords().size(), 0);
-        assertEquals(res4.getRecords().size(), 2);
+        assertEquals(res4.getRecords().size(), 1);
+        assertEquals(res5.getRecords().size(), 2);
     }
 
     @Test
