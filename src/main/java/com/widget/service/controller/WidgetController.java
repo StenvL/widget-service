@@ -38,7 +38,7 @@ public class WidgetController {
      * @return All widgets.
      */
     @GetMapping
-    public ResponseEntity<?> getAll(PageRequest pageRequest, WidgetQuery widgetQuery) {
+    public ResponseEntity<?> getAll(@Valid PageRequest pageRequest, WidgetQuery widgetQuery) {
         PageResponse<Widget> pagedWidgets = null;
         WidgetFilter widgetFilter = null;
 
