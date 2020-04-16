@@ -9,8 +9,12 @@ import java.time.ZonedDateTime;
 
 @Getter @Setter
 public class Widget extends Entity {
+    @Min(0)
     private int x;
+
+    @Min(0)
     private int y;
+
     private Integer z = null;
 
     @Min(0)

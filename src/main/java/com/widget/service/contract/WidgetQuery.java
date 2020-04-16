@@ -6,10 +6,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class WidgetQuery {
-    private Integer x1;
-    private Integer y1;
-    private Integer x2;
-    private Integer y2;
+    private Double x1;
+    private Double y1;
+    private Double x2;
+    private Double y2;
 
     /**
      * Checks if object is empty.

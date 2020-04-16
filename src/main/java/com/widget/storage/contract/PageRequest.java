@@ -12,9 +12,14 @@ import javax.validation.constraints.Min;
 @AllArgsConstructor
 public class PageRequest {
     @Min(0)
-    private Integer page = 0;
+    private Integer page;
 
     @Min(0)
     @Max(500)
-    private Integer perPage = 20;
+    private Integer perPage;
+
+    public PageRequest() {
+        page = 0;
+        perPage = 10;
+    }
 }
