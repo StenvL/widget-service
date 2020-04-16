@@ -15,13 +15,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * In-memory storage implementation.
+ */
 @Service
 public class InMemoryStorage implements IStorage {
     private ConcurrentHashMap<Type, List<BaseEntity>> entities = new ConcurrentHashMap<>();
 
     @Autowired(required=false)
     private IInterceptor interceptor = new EmptyInterceptor();
-
 
     /**
      * {@inheritDoc}
@@ -41,9 +43,13 @@ public class InMemoryStorage implements IStorage {
                 createEntity(entitiesByType, obj);
             }
             else {
-                BaseEntity entity = entitiesByType.stream().filter(x -> x.getId().equals(obj.getId())).findFirst().get();
-                if (entity != null) {
-                    updateEntity(entitiesByType, entity, obj);
+                Optional<BaseEntity> entity = entitiesByType
+                        .stream()
+                        .filter(x -> x.getId().equals(obj.getId()))
+                        .findFirst();
+
+                if (entity.isPresent()) {
+                    updateEntity(entitiesByType, entity.get(), obj);
                 }
                 else {
                     createEntity(entitiesByType, obj);
@@ -86,7 +92,7 @@ public class InMemoryStorage implements IStorage {
      * {@inheritDoc}
      */
     @Override
-    public <T extends  BaseEntity> List findAll(Class<T> type, Comparator<T> sort) {
+    public <T extends BaseEntity> List findAll(Class<T> type, Comparator<T> sort) {
         List<T> result = new ArrayList(entities.getOrDefault(type, new ArrayList<>()));
 
         if (sort != null) {
@@ -113,7 +119,7 @@ public class InMemoryStorage implements IStorage {
             @Valid PageRequest pageRequest,
             Comparator<T> sort) {
         List<T> entitiesByType = findAll(type, sort);
-        if (entitiesByType == null) {
+        if (entitiesByType.isEmpty()) {
             return PageResponse.empty();
         }
         else {
@@ -141,13 +147,13 @@ public class InMemoryStorage implements IStorage {
     @Override
     public void deleteById(Class type, UUID id) throws EntityNotFoundException {
         List<BaseEntity> entitiesByType = entities.getOrDefault(type, new ArrayList<>());
-        BaseEntity entityToDelete = entitiesByType.stream().filter(x -> x.getId().equals(id)).findFirst().get();
-        if (entityToDelete != null) {
-            entitiesByType.remove(entityToDelete);
-        }
-        else {
-            throw new EntityNotFoundException();
-        }
+        BaseEntity entityToDelete = entitiesByType
+                .stream()
+                .filter(x -> x.getId().equals(id))
+                .findFirst()
+                .orElseThrow(EntityNotFoundException::new);
+
+        entitiesByType.remove(entityToDelete);
     }
 
     /**
@@ -156,16 +162,6 @@ public class InMemoryStorage implements IStorage {
     @Override
     public void delete(BaseEntity obj) throws EntityNotFoundException {
         deleteById(obj.getClass(), (UUID)obj.getId());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void deleteAll(List<BaseEntity> objs) throws EntityNotFoundException {
-        for (BaseEntity obj: objs) {
-            delete(obj);
-        }
     }
 
     /**
@@ -194,9 +190,7 @@ public class InMemoryStorage implements IStorage {
     private <T extends BaseEntity> PageResponse getPagedResponse(List<T> allRecords, PageRequest pageRequest) {
         int pageStartIndex = pageRequest.getPage() * pageRequest.getPerPage(),
             pageEndIndex = Math.min((pageStartIndex + pageRequest.getPerPage()), allRecords.size());
-        return pageStartIndex > pageEndIndex
-            ? PageResponse.empty()
-            : new PageResponse(allRecords.subList(pageStartIndex, pageEndIndex), allRecords.size());
+        return new PageResponse(allRecords.subList(pageStartIndex, pageEndIndex), allRecords.size());
     }
 
     /**
@@ -204,7 +198,7 @@ public class InMemoryStorage implements IStorage {
      * @param entitiesCollection Collection to put new entity.
      * @param newEntity Entity to put.
      */
-    private void createEntity(List entitiesCollection, BaseEntity newEntity) {
+    private synchronized void createEntity(List entitiesCollection, BaseEntity newEntity) {
         interceptor.beforeCreate(newEntity);
         entitiesCollection.add(newEntity);
         interceptor.afterCreate(newEntity);
@@ -216,7 +210,7 @@ public class InMemoryStorage implements IStorage {
      * @param oldEntity Entity to overwrite.
      * @param newEntity Edited entity.
      */
-    private void updateEntity(List<BaseEntity> entitiesCollection, BaseEntity oldEntity, BaseEntity newEntity) {
+    private synchronized void updateEntity(List<BaseEntity> entitiesCollection, BaseEntity oldEntity, BaseEntity newEntity) {
         interceptor.beforeUpdate(newEntity);
         entitiesCollection.set(entitiesCollection.indexOf(oldEntity), newEntity);
         interceptor.afterUpdate(newEntity);

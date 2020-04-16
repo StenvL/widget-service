@@ -81,12 +81,6 @@ public interface IStorage {
     void delete(BaseEntity obj) throws EntityNotFoundException;
 
     /**
-     * Deletes entities.
-     * @param objs Entities to delete.
-     */
-    void deleteAll(List<BaseEntity> objs) throws EntityNotFoundException;
-
-    /**
      * Deletes all entities by type.
      * @param type Type.
      */
